@@ -1,5 +1,6 @@
 import "./globals.css";
 import Link from "next/link"; // Link is faster than <a> tags in Next.js
+import { Analytics } from "@vercel/analytics/next"
 
 export default function RootLayout({ children }) {
   return (
@@ -22,6 +23,7 @@ export default function RootLayout({ children }) {
         
         <main className="min-h-screen bg-gray-50">
           {children}
+          <Analytics />
         </main>
       </body>
     </html>
