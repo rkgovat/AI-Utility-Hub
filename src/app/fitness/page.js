@@ -1,27 +1,26 @@
-'use client'; // This tells Next.js this page uses "State" (interactivity)
+'use client';
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 export default function FitnessPage() {
-  // 1. STATE: This is the "Memory" of our form
   const [formData, setFormData] = useState({ frequency: '3-4', goal: '' });
-  const [response, setResponse] = useState(""); // Stores the AI's answer
+  const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
 
-  // Load History on Startup
+  // 1. Load History on Startup
   useEffect(() => {
     const saved = localStorage.getItem('fitness_history');
-    if (saved) setHistory(JSON.parse(saved));
+    if (saved) {
+      setHistory(JSON.parse(saved));
+    }
   }, []);
 
-  // 2. HANDLER: This updates the "Memory" when you type
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 3. SUBMIT: This talks to Gemini
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -31,20 +30,27 @@ export default function FitnessPage() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, type: 'fitness' }), // This tells the backend to use the fitness prompt!
+        body: JSON.stringify({ ...formData, type: 'fitness' }),
       });
       const data = await res.json();
       
       if (data.output) {
         setResponse(data.output);
         
-        // 2. Save to History
+        // 2. CAPTURE TIME & DATE
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // e.g., "10:30 AM"
+        const dateString = now.toLocaleDateString(); // e.g., "12/26/2025"
+
+        // 3. Save to History
         const newEntry = {
           id: Date.now(),
-          date: new Date().toLocaleDateString(),
+          date: dateString,
+          time: timeString, // We save the specific time here
           goal: formData.goal,
           plan: data.output
         };
+        
         const updatedHistory = [newEntry, ...history];
         setHistory(updatedHistory);
         localStorage.setItem('fitness_history', JSON.stringify(updatedHistory));
@@ -102,14 +108,21 @@ export default function FitnessPage() {
               </div>
             </div>
 
+            {/* BUTTON WITH LOADING SPINNER */}
             <button 
               type="submit" 
               disabled={loading}
-              className={`w-full py-4 rounded-xl font-bold text-lg text-white transition-all ${
+              className={`w-full py-4 rounded-xl font-bold text-lg text-white flex justify-center items-center gap-3 transition-all ${
                 loading ? "bg-slate-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 shadow-lg"
               }`}
             >
-              {loading ? "Generating Plan..." : "Create Workout Plan"}
+              {loading && (
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+              {loading ? "Designing Plan..." : "Create Workout Plan"}
             </button>
           </form>
         </div>
@@ -133,7 +146,7 @@ export default function FitnessPage() {
           </div>
         )}
 
-        {/* History Section */}
+        {/* History Section WITH TIME */}
         {history.length > 0 && (
           <div className="mt-16">
             <div className="flex justify-between items-end mb-6">
@@ -150,10 +163,16 @@ export default function FitnessPage() {
               {history.map((item) => (
                 <details key={item.id} className="group bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
                   <summary className="flex justify-between items-center p-5 cursor-pointer bg-slate-50 font-medium text-slate-700 group-hover:bg-slate-100">
-                    <span>{item.date} — <span className="font-bold text-slate-900">{item.goal}</span></span>
+                    <div className="flex flex-col">
+                      {/* HERE IS THE TIME AND DATE */}
+                      <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">
+                        {item.date} • {item.time}
+                      </span>
+                      <span className="font-bold text-slate-900 text-lg mt-1">{item.goal}</span>
+                    </div>
                     <span className="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
                   </summary>
-                  <div className="p-6 prose prose-sm max-w-none border-t border-slate-100">
+                  <div className="p-6 prose prose-sm max-w-none border-t border-slate-100 bg-gray-50">
                     <ReactMarkdown 
                       remarkPlugins={[remarkGfm]}
                       components={{
