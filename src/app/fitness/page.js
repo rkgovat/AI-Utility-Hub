@@ -8,7 +8,6 @@ export default function FitnessPage() {
   const [formData, setFormData] = useState({ 
     frequency: '3-4', 
     goal: '',
-    // New Fields
     experience: 'Beginner',
     experience_custom: '',
     equipment: 'Full Gym',
@@ -66,7 +65,7 @@ export default function FitnessPage() {
           id: Date.now(),
           date: now.toLocaleDateString(),
           time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          goal: formData.goal,
+          inputs: finalData, // <--- SAVING THE INPUTS HERE
           plan: data.output
         };
         
@@ -104,14 +103,7 @@ export default function FitnessPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block font-bold text-slate-700 mb-2">Main Goal</label>
-                <input 
-                  type="text" 
-                  name="goal" 
-                  required
-                  placeholder="e.g. Build muscle, lose 10lbs..."
-                  onChange={handleChange}
-                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                />
+                <input type="text" name="goal" required placeholder="e.g. Build muscle, lose 10lbs..." onChange={handleChange} className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
               <div>
                 <label className="block font-bold text-slate-700 mb-2">Days per week</label>
@@ -123,10 +115,8 @@ export default function FitnessPage() {
               </div>
             </div>
 
-            {/* ROW 2: Experience & Equipment (With Conditional "Other") */}
+            {/* ROW 2: Experience & Equipment */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              {/* Experience Logic */}
               <div>
                 <label className="block font-bold text-slate-700 mb-2">Experience Level</label>
                 <select name="experience" onChange={handleChange} className="w-full p-3 border border-slate-300 rounded-lg mb-2">
@@ -135,19 +125,10 @@ export default function FitnessPage() {
                   <option value="Advanced">Advanced</option>
                   <option value="other">Other...</option>
                 </select>
-                {/* CONDITIONAL INPUT: Only shows if 'other' is selected */}
                 {formData.experience === 'other' && (
-                  <input 
-                    type="text" 
-                    name="experience_custom" 
-                    placeholder="Describe your experience..." 
-                    onChange={handleChange}
-                    className="w-full p-3 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg outline-none"
-                  />
+                  <input type="text" name="experience_custom" placeholder="Describe your experience..." onChange={handleChange} className="w-full p-3 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg outline-none" />
                 )}
               </div>
-
-              {/* Equipment Logic */}
               <div>
                 <label className="block font-bold text-slate-700 mb-2">Access to Equipment</label>
                 <select name="equipment" onChange={handleChange} className="w-full p-3 border border-slate-300 rounded-lg mb-2">
@@ -157,21 +138,13 @@ export default function FitnessPage() {
                   <option value="other">Other...</option>
                 </select>
                 {formData.equipment === 'other' && (
-                  <input 
-                    type="text" 
-                    name="equipment_custom" 
-                    placeholder="Describe your equipment..." 
-                    onChange={handleChange}
-                    className="w-full p-3 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg outline-none"
-                  />
+                  <input type="text" name="equipment_custom" placeholder="Describe your equipment..." onChange={handleChange} className="w-full p-3 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg outline-none" />
                 )}
               </div>
             </div>
 
             {/* ROW 3: Split & Injuries */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              {/* Split Logic */}
               <div>
                 <label className="block font-bold text-slate-700 mb-2">Preferred Split</label>
                 <select name="split" onChange={handleChange} className="w-full p-3 border border-slate-300 rounded-lg mb-2">
@@ -181,48 +154,22 @@ export default function FitnessPage() {
                   <option value="other">Other...</option>
                 </select>
                 {formData.split === 'other' && (
-                  <input 
-                    type="text" 
-                    name="split_custom" 
-                    placeholder="Describe your preferred split..." 
-                    onChange={handleChange}
-                    className="w-full p-3 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg outline-none"
-                  />
+                  <input type="text" name="split_custom" placeholder="Describe your preferred split..." onChange={handleChange} className="w-full p-3 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg outline-none" />
                 )}
               </div>
-
-              {/* Injuries */}
               <div>
                 <label className="block font-bold text-slate-700 mb-2">Injuries / Limitations</label>
-                <textarea 
-                  name="injuries" 
-                  placeholder="e.g. Bad left knee, cannot run..."
-                  onChange={handleChange}
-                  rows="2" // Makes it slightly taller than a normal input
-                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                />
+                <textarea name="injuries" placeholder="e.g. Bad left knee..." onChange={handleChange} rows="2" className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
             </div>
 
-            {/* ROW 4: Optional Notes */}
+            {/* ROW 4: Notes */}
             <div>
               <label className="block font-bold text-slate-700 mb-2">Optional Notes</label>
-              <textarea 
-                name="notes" 
-                placeholder="Anything else? e.g. I prefer morning workouts, hate cardio..."
-                onChange={handleChange}
-                rows="3"
-                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              />
+              <textarea name="notes" placeholder="Anything else?" onChange={handleChange} rows="3" className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
             </div>
 
-            <button 
-              type="submit" 
-              disabled={loading}
-              className={`w-full py-4 rounded-xl font-bold text-lg text-white flex justify-center items-center gap-3 transition-all ${
-                loading ? "bg-slate-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 shadow-lg"
-              }`}
-            >
+            <button type="submit" disabled={loading} className={`w-full py-4 rounded-xl font-bold text-lg text-white flex justify-center items-center gap-3 transition-all ${loading ? "bg-slate-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 shadow-lg"}`}>
               {loading && (
                 <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -234,7 +181,7 @@ export default function FitnessPage() {
           </form>
         </div>
 
-        {/* Result & History Sections (Unchanged) */}
+        {/* Active Result */}
         {response && (
           <div className="mt-8 bg-white p-8 rounded-2xl shadow-lg border-2 border-blue-100">
             <h2 className="text-2xl font-bold text-slate-900 mb-4 flex items-center">
@@ -248,6 +195,7 @@ export default function FitnessPage() {
           </div>
         )}
 
+        {/* History Section */}
         {history.length > 0 && (
           <div className="mt-16">
             <div className="flex justify-between items-end mb-6">
@@ -262,14 +210,38 @@ export default function FitnessPage() {
                   <summary className="flex justify-between items-center p-5 cursor-pointer bg-slate-50 font-medium text-slate-700 group-hover:bg-slate-100">
                     <div className="flex flex-col">
                       <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">{item.date} • {item.time}</span>
-                      <span className="font-bold text-slate-900 text-lg mt-1">{item.goal}</span>
+                      <span className="font-bold text-slate-900 text-lg mt-1">{item.inputs ? item.inputs.goal : item.goal}</span>
                     </div>
                     <span className="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
                   </summary>
-                  <div className="p-6 prose prose-sm max-w-none border-t border-slate-100 bg-gray-50">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: ({node, ...props}) => <a {...props} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer" /> }}>
-                      {item.plan}
-                    </ReactMarkdown>
+                  
+                  <div className="p-6 border-t border-slate-100 bg-gray-50">
+                    
+                    {/* NEW: DISPLAY USER INPUTS */}
+                    {item.inputs && (
+                      <div className="mb-6 bg-blue-50 border border-blue-100 p-4 rounded-lg text-sm text-slate-700">
+                        <h4 className="font-bold text-blue-900 mb-2 border-b border-blue-200 pb-1">Plan Parameters</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                          <p><span className="font-semibold">Frequency:</span> {item.inputs.frequency} days/week</p>
+                          <p><span className="font-semibold">Experience:</span> {item.inputs.experience}</p>
+                          <p><span className="font-semibold">Equipment:</span> {item.inputs.equipment}</p>
+                          <p><span className="font-semibold">Split:</span> {item.inputs.split}</p>
+                          {item.inputs.injuries && (
+                             <p className="md:col-span-2"><span className="font-semibold text-red-600">Injuries:</span> {item.inputs.injuries}</p>
+                          )}
+                          {item.inputs.notes && (
+                             <p className="md:col-span-2"><span className="font-semibold">Notes:</span> {item.inputs.notes}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* AI RESPONSE */}
+                    <div className="prose prose-sm max-w-none">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: ({node, ...props}) => <a {...props} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer" /> }}>
+                        {item.plan}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 </details>
               ))}
