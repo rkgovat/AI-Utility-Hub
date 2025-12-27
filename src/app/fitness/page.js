@@ -4,17 +4,28 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 export default function FitnessPage() {
-  const [formData, setFormData] = useState({ frequency: '3-4', goal: '' });
+  // 1. EXPANDED STATE
+  const [formData, setFormData] = useState({ 
+    frequency: '3-4', 
+    goal: '',
+    // New Fields
+    experience: 'Beginner',
+    experience_custom: '',
+    equipment: 'Full Gym',
+    equipment_custom: '',
+    injuries: '',
+    split: 'Upper/Lower',
+    split_custom: '',
+    notes: ''
+  });
+
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
 
-  // 1. Load History on Startup
   useEffect(() => {
     const saved = localStorage.getItem('fitness_history');
-    if (saved) {
-      setHistory(JSON.parse(saved));
-    }
+    if (saved) setHistory(JSON.parse(saved));
   }, []);
 
   const handleChange = (e) => {
@@ -24,29 +35,37 @@ export default function FitnessPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setResponse(""); // Clear previous result while loading
+    setResponse("");
+
+    // 2. LOGIC: Resolve "Other" fields before sending
+    // If they picked "Other", use the custom text. Otherwise, use the dropdown.
+    const finalData = {
+      frequency: formData.frequency,
+      goal: formData.goal,
+      injuries: formData.injuries,
+      notes: formData.notes,
+      experience: formData.experience === 'other' ? formData.experience_custom : formData.experience,
+      equipment: formData.equipment === 'other' ? formData.equipment_custom : formData.equipment,
+      split: formData.split === 'other' ? formData.split_custom : formData.split,
+      type: 'fitness'
+    };
 
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, type: 'fitness' }),
+        body: JSON.stringify(finalData),
       });
       const data = await res.json();
       
       if (data.output) {
         setResponse(data.output);
         
-        // 2. CAPTURE TIME & DATE
         const now = new Date();
-        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // e.g., "10:30 AM"
-        const dateString = now.toLocaleDateString(); // e.g., "12/26/2025"
-
-        // 3. Save to History
         const newEntry = {
           id: Date.now(),
-          date: dateString,
-          time: timeString, // We save the specific time here
+          date: now.toLocaleDateString(),
+          time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           goal: formData.goal,
           plan: data.output
         };
@@ -73,42 +92,130 @@ export default function FitnessPage() {
     <div className="min-h-screen bg-gray-50 p-6 md:p-12">
       <div className="max-w-4xl mx-auto">
         
-        {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-4xl font-extrabold text-slate-900 mb-2">🏋️ AI Fitness Coach</h1>
-          <p className="text-slate-600">Generated plans with video tutorials included.</p>
+          <p className="text-slate-600">Complete the profile below for a precision plan.</p>
         </div>
 
-        {/* Input Form */}
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
           <form onSubmit={handleSubmit} className="space-y-6">
+            
+            {/* ROW 1: Goal & Frequency */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block font-bold text-slate-700 mb-2">Days per week</label>
-                <select 
-                  name="frequency" 
-                  onChange={handleChange}
-                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="1-2">1-2 Days (Maintenance)</option>
-                  <option value="3-4">3-4 Days (Growth)</option>
-                  <option value="5+">5+ Days (Intense)</option>
-                </select>
-              </div>
-              <div>
-                <label className="block font-bold text-slate-700 mb-2">Goal</label>
+                <label className="block font-bold text-slate-700 mb-2">Main Goal</label>
                 <input 
                   type="text" 
                   name="goal" 
                   required
-                  placeholder="e.g. Broad shoulders, run 5k..."
+                  placeholder="e.g. Build muscle, lose 10lbs..."
                   onChange={handleChange}
+                  className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-2">Days per week</label>
+                <select name="frequency" onChange={handleChange} className="w-full p-3 border border-slate-300 rounded-lg">
+                  <option value="1-2">1-2 Days</option>
+                  <option value="3-4">3-4 Days</option>
+                  <option value="5+">5+ Days</option>
+                </select>
+              </div>
+            </div>
+
+            {/* ROW 2: Experience & Equipment (With Conditional "Other") */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Experience Logic */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-2">Experience Level</label>
+                <select name="experience" onChange={handleChange} className="w-full p-3 border border-slate-300 rounded-lg mb-2">
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                  <option value="other">Other...</option>
+                </select>
+                {/* CONDITIONAL INPUT: Only shows if 'other' is selected */}
+                {formData.experience === 'other' && (
+                  <input 
+                    type="text" 
+                    name="experience_custom" 
+                    placeholder="Describe your experience..." 
+                    onChange={handleChange}
+                    className="w-full p-3 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg outline-none"
+                  />
+                )}
+              </div>
+
+              {/* Equipment Logic */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-2">Access to Equipment</label>
+                <select name="equipment" onChange={handleChange} className="w-full p-3 border border-slate-300 rounded-lg mb-2">
+                  <option value="Full Gym">Full Gym</option>
+                  <option value="Limited Home Gym">Limited Home Gym</option>
+                  <option value="Bodyweight Only">Bodyweight Only</option>
+                  <option value="other">Other...</option>
+                </select>
+                {formData.equipment === 'other' && (
+                  <input 
+                    type="text" 
+                    name="equipment_custom" 
+                    placeholder="Describe your equipment..." 
+                    onChange={handleChange}
+                    className="w-full p-3 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg outline-none"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* ROW 3: Split & Injuries */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Split Logic */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-2">Preferred Split</label>
+                <select name="split" onChange={handleChange} className="w-full p-3 border border-slate-300 rounded-lg mb-2">
+                  <option value="Upper/Lower">Upper / Lower</option>
+                  <option value="Push/Pull/Legs">Push / Pull / Legs</option>
+                  <option value="Full Body">Full Body</option>
+                  <option value="other">Other...</option>
+                </select>
+                {formData.split === 'other' && (
+                  <input 
+                    type="text" 
+                    name="split_custom" 
+                    placeholder="Describe your preferred split..." 
+                    onChange={handleChange}
+                    className="w-full p-3 border-l-4 border-blue-500 bg-blue-50 rounded-r-lg outline-none"
+                  />
+                )}
+              </div>
+
+              {/* Injuries */}
+              <div>
+                <label className="block font-bold text-slate-700 mb-2">Injuries / Limitations</label>
+                <textarea 
+                  name="injuries" 
+                  placeholder="e.g. Bad left knee, cannot run..."
+                  onChange={handleChange}
+                  rows="2" // Makes it slightly taller than a normal input
                   className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>
             </div>
 
-            {/* BUTTON WITH LOADING SPINNER */}
+            {/* ROW 4: Optional Notes */}
+            <div>
+              <label className="block font-bold text-slate-700 mb-2">Optional Notes</label>
+              <textarea 
+                name="notes" 
+                placeholder="Anything else? e.g. I prefer morning workouts, hate cardio..."
+                onChange={handleChange}
+                rows="3"
+                className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
             <button 
               type="submit" 
               disabled={loading}
@@ -127,58 +234,40 @@ export default function FitnessPage() {
           </form>
         </div>
 
-        {/* Active Result */}
+        {/* Result & History Sections (Unchanged) */}
         {response && (
           <div className="mt-8 bg-white p-8 rounded-2xl shadow-lg border-2 border-blue-100">
             <h2 className="text-2xl font-bold text-slate-900 mb-4 flex items-center">
               <span className="text-2xl mr-2">🎯</span> Your Custom Plan
             </h2>
             <div className="prose prose-slate max-w-none">
-              <ReactMarkdown 
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  a: ({node, ...props}) => <a {...props} className="text-blue-600 font-bold hover:underline" target="_blank" rel="noopener noreferrer" />
-                }}
-              >
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: ({node, ...props}) => <a {...props} className="text-blue-600 font-bold hover:underline" target="_blank" rel="noopener noreferrer" /> }}>
                 {response}
               </ReactMarkdown>
             </div>
           </div>
         )}
 
-        {/* History Section WITH TIME */}
         {history.length > 0 && (
           <div className="mt-16">
             <div className="flex justify-between items-end mb-6">
               <h3 className="text-2xl font-bold text-slate-800">History</h3>
-              <button 
-                onClick={clearHistory}
-                className="text-sm text-red-500 hover:text-red-700 font-semibold underline"
-              >
+              <button onClick={clearHistory} className="text-sm text-red-500 hover:text-red-700 font-semibold underline">
                 Clear History
               </button>
             </div>
-            
             <div className="space-y-4">
               {history.map((item) => (
                 <details key={item.id} className="group bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
                   <summary className="flex justify-between items-center p-5 cursor-pointer bg-slate-50 font-medium text-slate-700 group-hover:bg-slate-100">
                     <div className="flex flex-col">
-                      {/* HERE IS THE TIME AND DATE */}
-                      <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">
-                        {item.date} • {item.time}
-                      </span>
+                      <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">{item.date} • {item.time}</span>
                       <span className="font-bold text-slate-900 text-lg mt-1">{item.goal}</span>
                     </div>
                     <span className="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
                   </summary>
                   <div className="p-6 prose prose-sm max-w-none border-t border-slate-100 bg-gray-50">
-                    <ReactMarkdown 
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        a: ({node, ...props}) => <a {...props} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer" />
-                      }}
-                    >
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: ({node, ...props}) => <a {...props} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer" /> }}>
                       {item.plan}
                     </ReactMarkdown>
                   </div>

@@ -8,16 +8,24 @@ export async function POST(req) {
   try {
     // 1. Get the data sent from your frontend form
     const body = await req.json();
-    const { frequency, goal, type } = body;
+    // Destructure all the new fields
+    const { frequency, goal, type, experience, equipment, injuries, split, notes } = body;
 
     // 2. MODULAR LOGIC: Decide which "Persona" to use
     let systemPrompt = "";
     
     if (type === 'fitness') {
-      systemPrompt = `You are an elite fitness coach. Create a highly personalized 
-      workout plan for a user who wants to work out ${frequency} days a week. 
-      Their main goal is: ${goal}. 
+      systemPrompt = `You are an elite fitness coach. Create a personalized workout plan.
       
+      USER PROFILE:
+      - Frequency: ${frequency} days/week
+      - Goal: ${goal}
+      - Experience Level: ${experience}
+      - Equipment Access: ${equipment}
+      - Injuries/Limitations: ${injuries || "None"}
+      - Preferred Split: ${split}
+      - Additional Notes: ${notes || "None"}
+
       IMPORTANT FORMATTING RULES:
       1. Use bold headers for days (e.g., **Day 1: Upper Body**).
       2. Use bullet points for exercises.
@@ -26,7 +34,7 @@ export async function POST(req) {
       4. Keep the tone encouraging but professional.`;
     } else if (type === 'cooking') {
       systemPrompt = `You are a professional chef...`; // We can add this later!
-    }
+    } 
 
     // 3. Talk to the Gemini 2.0 Flash model (it's fast and efficient)
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
@@ -38,14 +46,6 @@ export async function POST(req) {
 
   } catch (error) {
     console.error("API Error:", error);
-
-    // Check if it's a Quota/429 error
-    if (error.status === 429) {
-        return NextResponse.json({ 
-            error: "The AI is currently 'resting' due to high demand. Please try again in 30 seconds!" 
-        }, { status: 429 });
-    }
-
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }
