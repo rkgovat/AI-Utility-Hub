@@ -106,12 +106,8 @@ export default function FitnessPage() {
                 <input type="text" name="goal" required placeholder="e.g. Build muscle, lose 10lbs..." onChange={handleChange} className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
               <div>
-                <label className="block font-bold text-slate-700 mb-2">Days per week</label>
-                <select name="frequency" onChange={handleChange} className="w-full p-3 border border-slate-300 rounded-lg">
-                  <option value="1-2">1-2 Days</option>
-                  <option value="3-4">3-4 Days</option>
-                  <option value="5+">5+ Days</option>
-                </select>
+                <label className="block font-bold text-slate-700 mb-2">Workout days per week</label>
+                <input type="text" name="frequency" required placeholder="Enter number of workout days" onChange={handleChange} className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
             </div>
 
